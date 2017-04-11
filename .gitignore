@@ -132,4 +132,4 @@ gradle-app.setting
 
 /keyrings/live/pubring.kbx~
 /keyrings/live/secring.gpg
-/src/main/resources/credentials.properties
+/src/test/resources/credentials.properties
