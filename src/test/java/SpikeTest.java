@@ -12,15 +12,17 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 
 public class SpikeTest {
 
-    public static final String USERNAME = "";
-    public static final String PASSWORD = "";
-
     private static final long WAIT_TIME_OUT_IN_SECONDS = 30;
     private JBrowserDriver driver;
+
+    private String username;
+    private String password;
 
     @Before
     public void setup() throws IOException {
@@ -30,6 +32,12 @@ public class SpikeTest {
                 .ajaxResourceTimeout(10000)
                 .ajaxWait(15000)
                 .build());
+
+        InputStream inputStream = getClass().getResourceAsStream("/credentials.properties");
+        Properties properties = new Properties();
+        properties.load(inputStream);
+        username = properties.getProperty("username");
+        password = properties.getProperty("password");
     }
 
     @Test
@@ -40,8 +48,8 @@ public class SpikeTest {
         WebElement passwordElement = driver.findElementById("password");
         WebElement submitButton = driver.findElementByCssSelector("input[name='submit']");
 
-        usernameElement.sendKeys(USERNAME);
-        passwordElement.sendKeys(PASSWORD);
+        usernameElement.sendKeys(username);
+        passwordElement.sendKeys(password);
         usernameElement.submit();
 
         new WebDriverWait(driver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[@id='loginLink']//a[text()='Log out']")));
@@ -71,7 +79,7 @@ public class SpikeTest {
     @Test
     public void listInvoices() throws Exception {
         TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
-        List<Invoice> invoices = teamMedicalService.listInvoices(USERNAME, PASSWORD);
+        List<Invoice> invoices = teamMedicalService.listInvoices(username, password);
 
         System.out.println("Invoices...");
         for (Invoice invoice : invoices) {
