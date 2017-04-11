@@ -130,6 +130,6 @@ gradle-app.setting
 
 # End of https://www.gitignore.io/api/macos,intellij,gradle,java
 
-credentials.properties/keyrings/live/pubring.gpg~
 /keyrings/live/pubring.kbx~
 /keyrings/live/secring.gpg
+/src/main/resources/credentials.properties
