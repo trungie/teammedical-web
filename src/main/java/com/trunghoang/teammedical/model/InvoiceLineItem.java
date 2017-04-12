@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class InvoiceItem {
+public class InvoiceLineItem {
 
     private String code;
     private String description;

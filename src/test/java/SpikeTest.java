@@ -1,7 +1,7 @@
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.Settings;
 import com.machinepublishers.jbrowserdriver.UserAgent;
-import com.trunghoang.teammedical.model.Invoice;
+import com.trunghoang.teammedical.model.InvoiceSummary;
 import com.trunghoang.teammedical.service.TeamMedicalService;
 import org.junit.After;
 import org.junit.Before;
@@ -79,11 +79,11 @@ public class SpikeTest {
     @Test
     public void listInvoices() throws Exception {
         TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
-        List<Invoice> invoices = teamMedicalService.listInvoices(username, password);
+        List<InvoiceSummary> invoiceSummaries = teamMedicalService.listInvoices(username, password);
 
         System.out.println("Invoices...");
-        for (Invoice invoice : invoices) {
-            System.out.println(invoice);
+        for (InvoiceSummary invoiceSummary : invoiceSummaries) {
+            System.out.println(invoiceSummary);
         }
     }
 

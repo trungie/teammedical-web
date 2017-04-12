@@ -2,8 +2,8 @@ package com.trunghoang.teammedical.service;
 
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.trunghoang.teammedical.model.Invoice;
-import com.trunghoang.teammedical.model.InvoiceDetails;
-import com.trunghoang.teammedical.model.InvoiceItem;
+import com.trunghoang.teammedical.model.InvoiceLineItem;
+import com.trunghoang.teammedical.model.InvoiceSummary;
 import com.trunghoang.teammedical.utils.FileDownloader;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
@@ -49,8 +49,8 @@ public class TeamMedicalService {
         }
     }
 
-    public List<Invoice> listInvoices(String username, String password) {
-        List<Invoice> invoices = new ArrayList<>();
+    public List<InvoiceSummary> listInvoices(String username, String password) {
+        List<InvoiceSummary> invoiceSummaries = new ArrayList<>();
 
         retryOnTimeout(() -> {
 
@@ -83,7 +83,7 @@ public class TeamMedicalService {
                 List<WebElement> cols = row.findElements(By.cssSelector("td"));
                 if (cols.size() > 0) {
                     WebElement pdfLink = cols.size() > 6 ? findElementOptional(cols.get(7), By.cssSelector("a")) : null;
-                    invoices.add(Invoice.builder()
+                    invoiceSummaries.add(InvoiceSummary.builder()
                             .id(cols.get(0).getText())
                             .type(cols.get(1).getText())
                             .reference(cols.get(2).getText())
@@ -99,26 +99,26 @@ public class TeamMedicalService {
 
         }, 3);
 
-        return invoices;
+        return invoiceSummaries;
     }
 
-    public InvoiceDetails getDetails(Invoice invoice) {
-        final InvoiceDetails[] invoiceDetails = {null};
+    public Invoice getDetails(InvoiceSummary invoiceSummary) {
+        final Invoice[] invoiceDetails = {null};
 
         retryOnTimeout(() -> {
 
 
-            driver.get("https://www.teammed.com.au/shop/?page=order_detail&orderid=" + invoice.getId());
+            driver.get("https://www.teammed.com.au/shop/?page=order_detail&orderid=" + invoiceSummary.getId());
 
-            new WebDriverWait(driver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h3[contains(text(), 'Invoice Details')]")));
+            new WebDriverWait(driver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h3[contains(text(), 'InvoiceSummary Details')]")));
 
-            List<InvoiceItem> invoiceItems = new ArrayList<>();
+            List<InvoiceLineItem> invoiceLineItems = new ArrayList<>();
             List<WebElement> tables = driver.findElementsByCssSelector("div.standardTable table");
 
             List<WebElement> invoiceDetailRows = tables.get(1).findElements(By.cssSelector("tbody tr"));
             for (WebElement invoiceDetailRow : invoiceDetailRows) {
                 List<WebElement> invoiceDetailCells = invoiceDetailRow.findElements(By.cssSelector("td"));
-                invoiceItems.add(InvoiceItem.builder()
+                invoiceLineItems.add(InvoiceLineItem.builder()
                         .code(invoiceDetailCells.get(0).getText())
                         .description(invoiceDetailCells.get(1).getText())
                         .orderedQuantity(invoiceDetailCells.get(2).getText())
@@ -136,7 +136,7 @@ public class TeamMedicalService {
             List<WebElement> thirdRowCells = invoiceHeaderRows.get(2).findElements(By.cssSelector("td"));
             List<WebElement> fourthRowCells = invoiceHeaderRows.get(3).findElements(By.cssSelector("td"));
 
-            invoiceDetails[0] = InvoiceDetails.builder()
+            invoiceDetails[0] = Invoice.builder()
                     .id(firstRowCells.get(1).getText())
                     .reference(firstRowCells.get(3).getText())
                     .dateSubmitted(secondRowCells.get(1).getText())
@@ -145,7 +145,7 @@ public class TeamMedicalService {
                     .consignmentNumber(thirdRowCells.get(3).getText())
                     .contactName(fourthRowCells.get(1).getText())
                     .deliveryAddress(fourthRowCells.get(3).getText())
-                    .invoiceItems(invoiceItems)
+                    .invoiceLineItems(invoiceLineItems)
                     .build();
 
         }, 3);
@@ -153,12 +153,12 @@ public class TeamMedicalService {
         return invoiceDetails[0];
     }
 
-    public String getPdf(Invoice invoice) {
+    public String getPdf(InvoiceSummary invoiceSummary) {
         String filePath = null;
         try {
-            if (invoice.getPdfLink() != null) {
+            if (invoiceSummary.getPdfLink() != null) {
                 FileDownloader fileDownloader = new FileDownloader(driver);
-                filePath = fileDownloader.urlDownloader(invoice.getPdfLink());
+                filePath = fileDownloader.urlDownloader(invoiceSummary.getPdfLink());
             }
         } catch (Exception e) {
             e.printStackTrace();
