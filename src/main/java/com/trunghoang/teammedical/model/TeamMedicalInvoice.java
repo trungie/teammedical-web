@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class Invoice {
+public class TeamMedicalInvoice {
 
     private String id;
     private String reference;
@@ -17,6 +17,6 @@ public class Invoice {
     private String totalValue;
     private String consignmentNumber;
     private String deliveryAddress;
-    private List<InvoiceLineItem> invoiceLineItems;
+    private List<TeamMedicalInvoiceLineItem> invoiceLineItems;
 
 }

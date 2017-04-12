@@ -1,5 +1,5 @@
-import com.trunghoang.teammedical.model.Invoice;
-import com.trunghoang.teammedical.model.InvoiceLineItem;
+import com.trunghoang.teammedical.model.TeamMedicalInvoice;
+import com.trunghoang.teammedical.model.TeamMedicalInvoiceLineItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -42,7 +42,7 @@ public class StaticTest {
 //            System.out.println(type.getAttribute("innerHTML") + " " + value.getAttribute("innerHTML"));
         }
 
-        Invoice invoice = Invoice.builder()
+        TeamMedicalInvoice teamMedicalInvoice = TeamMedicalInvoice.builder()
                 .id(dataListValues.get(0).getText())
                 .dateSubmitted(dataListValues.get(1).getText())
                 .dateInvoiced(dataListValues.get(2).getText())
@@ -53,12 +53,12 @@ public class StaticTest {
                 .contactName(dataListValues.get(7).getText())
                 .build();
 
-        System.out.println("invoice = " + invoice);
+        System.out.println("invoice = " + teamMedicalInvoice);
     }
 
     @Test
     public void getInvoiceDetails() {
-        List<InvoiceLineItem> invoiceLineItems = new ArrayList<>();
+        List<TeamMedicalInvoiceLineItem> invoiceLineItems = new ArrayList<>();
 
         driver.get(filePath);
 
@@ -73,7 +73,7 @@ public class StaticTest {
     //                System.out.println(title + " - " + value);
                 }
 
-                InvoiceLineItem invoiceLineItem = InvoiceLineItem.builder()
+                TeamMedicalInvoiceLineItem invoiceLineItem = TeamMedicalInvoiceLineItem.builder()
                         .code(rows.get(0).getText())
                         .description(rows.get(1).getText())
                         .orderedQuantity(rows.get(2).getText())

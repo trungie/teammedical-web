@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class InvoiceSummary {
+public class TeamMedicalInvoiceSummary {
 
     private String id;
     private String type;

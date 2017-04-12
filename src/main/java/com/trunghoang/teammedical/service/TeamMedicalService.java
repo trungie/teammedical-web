@@ -1,8 +1,8 @@
 package com.trunghoang.teammedical.service;
 
-import com.trunghoang.teammedical.model.Invoice;
-import com.trunghoang.teammedical.model.InvoiceLineItem;
-import com.trunghoang.teammedical.model.InvoiceSummary;
+import com.trunghoang.teammedical.model.TeamMedicalInvoice;
+import com.trunghoang.teammedical.model.TeamMedicalInvoiceLineItem;
+import com.trunghoang.teammedical.model.TeamMedicalInvoiceSummary;
 import com.trunghoang.teammedical.utils.FileDownloader;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.*;
@@ -66,8 +66,8 @@ public class TeamMedicalService {
         }, 3);
     }
 
-    public List<InvoiceSummary> listInvoiceSummaries() {
-        List<InvoiceSummary> invoiceSummaries = new ArrayList<>();
+    public List<TeamMedicalInvoiceSummary> listInvoiceSummaries() {
+        List<TeamMedicalInvoiceSummary> invoiceSummaries = new ArrayList<>();
 
         retryOnTimeout(() -> {
 
@@ -85,7 +85,7 @@ public class TeamMedicalService {
                 List<WebElement> cols = row.findElements(By.cssSelector("td"));
                 if (cols.size() > 0) {
                     WebElement pdfLink = cols.size() > 6 ? findElementOptional(cols.get(7), By.cssSelector("a")) : null;
-                    invoiceSummaries.add(InvoiceSummary.builder()
+                    invoiceSummaries.add(TeamMedicalInvoiceSummary.builder()
                             .id(cols.get(0).getText())
                             .type(cols.get(1).getText())
                             .reference(cols.get(2).getText())
@@ -104,8 +104,8 @@ public class TeamMedicalService {
         return invoiceSummaries;
     }
 
-    public Invoice getInvoice(String invoiceId) {
-        final Invoice[] invoiceDetails = {null};
+    public TeamMedicalInvoice getInvoice(String invoiceId) {
+        final TeamMedicalInvoice[] teamMedicalInvoiceDetails = {null};
 
         retryOnTimeout(() -> {
 
@@ -113,7 +113,7 @@ public class TeamMedicalService {
 
             new WebDriverWait(webDriver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h3[contains(text(), 'Invoice Detail')]")));
 
-            List<InvoiceLineItem> invoiceLineItems = new ArrayList<>();
+            List<TeamMedicalInvoiceLineItem> invoiceLineItems = new ArrayList<>();
 
             // get invoice line items
             WebElement invoiceDetailsTable = webDriver.findElement(By.id("no-more-tables"));
@@ -121,7 +121,7 @@ public class TeamMedicalService {
             for (WebElement col : cols) {
                 List<WebElement> rows = col.findElements(By.xpath(".//td"));
                 if (rows.size() > 0) {
-                    InvoiceLineItem invoiceLineItem = InvoiceLineItem.builder()
+                    TeamMedicalInvoiceLineItem invoiceLineItem = TeamMedicalInvoiceLineItem.builder()
                             .code(rows.get(0).getText())
                             .description(rows.get(1).getText())
                             .orderedQuantity(rows.get(2).getText())
@@ -137,7 +137,7 @@ public class TeamMedicalService {
             // get invoice details
             WebElement invoiceDetailsPanelHeading = webDriver.findElement(By.xpath("//div[contains(@class, 'panel-heading') and contains(text(), 'Invoice Details')]/.."));
             List<WebElement> dataListValues = invoiceDetailsPanelHeading.findElements(By.xpath(".//dd"));
-            invoiceDetails[0] = Invoice.builder()
+            teamMedicalInvoiceDetails[0] = TeamMedicalInvoice.builder()
                     .id(dataListValues.get(0).getText())
                     .dateSubmitted(dataListValues.get(1).getText())
                     .dateInvoiced(dataListValues.get(2).getText())
@@ -151,7 +151,7 @@ public class TeamMedicalService {
 
         }, 3);
 
-        return invoiceDetails[0];
+        return teamMedicalInvoiceDetails[0];
     }
 
     public File download(String link) {

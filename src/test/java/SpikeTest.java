@@ -1,8 +1,8 @@
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.Settings;
 import com.machinepublishers.jbrowserdriver.UserAgent;
-import com.trunghoang.teammedical.model.Invoice;
-import com.trunghoang.teammedical.model.InvoiceSummary;
+import com.trunghoang.teammedical.model.TeamMedicalInvoice;
+import com.trunghoang.teammedical.model.TeamMedicalInvoiceSummary;
 import com.trunghoang.teammedical.service.TeamMedicalService;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -87,11 +87,11 @@ public class SpikeTest {
     public void listInvoiceSummariesAndGetDetail() throws Exception {
         TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
         teamMedicalService.login(username, password);
-        List<InvoiceSummary> invoiceSummaries = teamMedicalService.listInvoiceSummaries();
+        List<TeamMedicalInvoiceSummary> invoiceSummaries = teamMedicalService.listInvoiceSummaries();
 
         System.out.println("Invoices...");
-        for (InvoiceSummary invoiceSummary : invoiceSummaries) {
-            System.out.println(invoiceSummary);
+        for (TeamMedicalInvoiceSummary teamMedicalInvoiceSummary : invoiceSummaries) {
+            System.out.println(teamMedicalInvoiceSummary);
         }
     }
 
@@ -99,8 +99,8 @@ public class SpikeTest {
     public void getInvoice() {
         TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
         teamMedicalService.login(username, password);
-        Invoice invoice = teamMedicalService.getInvoice(invoiceId);
-        System.out.println("invoice = " + invoice);
+        TeamMedicalInvoice teamMedicalInvoice = teamMedicalService.getInvoice(invoiceId);
+        System.out.println("invoice = " + teamMedicalInvoice);
     }
 
     @Test
