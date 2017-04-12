@@ -49,7 +49,7 @@ public class TeamMedicalService {
         }
     }
 
-    public List<InvoiceSummary> listInvoices(String username, String password) {
+    public List<InvoiceSummary> listInvoiceSummaries(String username, String password) {
         List<InvoiceSummary> invoiceSummaries = new ArrayList<>();
 
         retryOnTimeout(() -> {
@@ -102,49 +102,48 @@ public class TeamMedicalService {
         return invoiceSummaries;
     }
 
-    public Invoice getDetails(InvoiceSummary invoiceSummary) {
+    public Invoice getInvoice(InvoiceSummary invoiceSummary) {
         final Invoice[] invoiceDetails = {null};
 
         retryOnTimeout(() -> {
-
 
             driver.get("https://www.teammed.com.au/shop/?page=order_detail&orderid=" + invoiceSummary.getId());
 
             new WebDriverWait(driver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h3[contains(text(), 'InvoiceSummary Details')]")));
 
             List<InvoiceLineItem> invoiceLineItems = new ArrayList<>();
-            List<WebElement> tables = driver.findElementsByCssSelector("div.standardTable table");
 
-            List<WebElement> invoiceDetailRows = tables.get(1).findElements(By.cssSelector("tbody tr"));
-            for (WebElement invoiceDetailRow : invoiceDetailRows) {
-                List<WebElement> invoiceDetailCells = invoiceDetailRow.findElements(By.cssSelector("td"));
-                invoiceLineItems.add(InvoiceLineItem.builder()
-                        .code(invoiceDetailCells.get(0).getText())
-                        .description(invoiceDetailCells.get(1).getText())
-                        .orderedQuantity(invoiceDetailCells.get(2).getText())
-                        .suppliedQuantity(invoiceDetailCells.get(3).getText())
-                        .unitPrice(invoiceDetailCells.get(4).getText())
-                        .valueExcludingGst(invoiceDetailCells.get(5).getText())
-                        .valueIncludingGst(invoiceDetailCells.get(6).getText())
-                        .build());
+            // get invoice line items
+            WebElement invoiceDetailsTable = driver.findElement(By.id("no-more-tables"));
+            List<WebElement> cols = invoiceDetailsTable.findElements(By.xpath(".//tr"));
+            for (WebElement col : cols) {
+                List<WebElement> rows = col.findElements(By.xpath(".//td"));
+                if (rows.size() > 0) {
+                    InvoiceLineItem invoiceLineItem = InvoiceLineItem.builder()
+                            .code(rows.get(0).getText())
+                            .description(rows.get(1).getText())
+                            .orderedQuantity(rows.get(2).getText())
+                            .suppliedQuantity(rows.get(3).getText())
+                            .unitPrice(rows.get(4).getText())
+                            .valueExcludingGst(rows.get(5).getText())
+                            .valueIncludingGst(rows.get(6).getText())
+                            .build();
+                    invoiceLineItems.add(invoiceLineItem);
+                }
             }
 
-            List<WebElement> invoiceHeaderRows = tables.get(0).findElements(By.cssSelector("tbody tr"));
-
-            List<WebElement> firstRowCells = invoiceHeaderRows.get(0).findElements(By.cssSelector("td"));
-            List<WebElement> secondRowCells = invoiceHeaderRows.get(1).findElements(By.cssSelector("td"));
-            List<WebElement> thirdRowCells = invoiceHeaderRows.get(2).findElements(By.cssSelector("td"));
-            List<WebElement> fourthRowCells = invoiceHeaderRows.get(3).findElements(By.cssSelector("td"));
-
+            // get invoice details
+            WebElement invoiceDetailsPanelHeading = driver.findElement(By.xpath("//div[contains(@class, 'panel-heading') and contains(text(), 'Invoice Details')]/.."));
+            List<WebElement> dataListValues = invoiceDetailsPanelHeading.findElements(By.xpath(".//dd"));
             invoiceDetails[0] = Invoice.builder()
-                    .id(firstRowCells.get(1).getText())
-                    .reference(firstRowCells.get(3).getText())
-                    .dateSubmitted(secondRowCells.get(1).getText())
-                    .totalValue(secondRowCells.get(3).getText())
-                    .dateInvoiced(thirdRowCells.get(1).getText())
-                    .consignmentNumber(thirdRowCells.get(3).getText())
-                    .contactName(fourthRowCells.get(1).getText())
-                    .deliveryAddress(fourthRowCells.get(3).getText())
+                    .id(dataListValues.get(0).getText())
+                    .dateSubmitted(dataListValues.get(1).getText())
+                    .dateInvoiced(dataListValues.get(2).getText())
+                    .contactName(dataListValues.get(3).getText())
+                    .reference(dataListValues.get(4).getText())
+                    .totalValue(dataListValues.get(5).getText())
+                    .consignmentNumber(dataListValues.get(6).getText())
+                    .contactName(dataListValues.get(7).getText())
                     .invoiceLineItems(invoiceLineItems)
                     .build();
 

@@ -58,10 +58,11 @@ public class StaticTest {
 
     @Test
     public void getInvoiceDetails() {
-        driver.get(filePath);
-        WebElement invoiceDetailsTable = driver.findElement(By.id("no-more-tables"));
-
         List<InvoiceLineItem> invoiceLineItems = new ArrayList<>();
+
+        driver.get(filePath);
+
+        WebElement invoiceDetailsTable = driver.findElement(By.id("no-more-tables"));
         List<WebElement> cols = invoiceDetailsTable.findElements(By.xpath(".//tr"));
         for (WebElement col : cols) {
             List<WebElement> rows = col.findElements(By.xpath(".//td"));

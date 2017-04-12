@@ -79,7 +79,7 @@ public class SpikeTest {
     @Test
     public void listInvoices() throws Exception {
         TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
-        List<InvoiceSummary> invoiceSummaries = teamMedicalService.listInvoices(username, password);
+        List<InvoiceSummary> invoiceSummaries = teamMedicalService.listInvoiceSummaries(username, password);
 
         System.out.println("Invoices...");
         for (InvoiceSummary invoiceSummary : invoiceSummaries) {
