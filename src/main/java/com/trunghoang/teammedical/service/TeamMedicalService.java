@@ -1,15 +1,11 @@
 package com.trunghoang.teammedical.service;
 
-import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.trunghoang.teammedical.model.Invoice;
 import com.trunghoang.teammedical.model.InvoiceLineItem;
 import com.trunghoang.teammedical.model.InvoiceSummary;
 import com.trunghoang.teammedical.utils.FileDownloader;
 import lombok.extern.slf4j.Slf4j;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -19,13 +15,12 @@ import java.util.List;
 @Slf4j
 public class TeamMedicalService {
 
-    private static final String LOGIN_PAGE = "https://www.teammed.com.au/login";
     private static final int WAIT_TIME_OUT_IN_SECONDS = 30;
 
-    private JBrowserDriver driver;
+    private WebDriver webDriver;
 
-    public TeamMedicalService(JBrowserDriver driver) {
-        this.driver = driver;
+    public TeamMedicalService(WebDriver webDriver) {
+        this.webDriver = webDriver;
     }
 
     private void retryOnTimeout(Runnable r, int retryMax) {
@@ -49,35 +44,41 @@ public class TeamMedicalService {
         }
     }
 
-    public List<InvoiceSummary> listInvoiceSummaries(String username, String password) {
-        List<InvoiceSummary> invoiceSummaries = new ArrayList<>();
-
+    public void login(String username, String password) {
         retryOnTimeout(() -> {
 
             log.info("Login");
-            driver.get(LOGIN_PAGE);
+            webDriver.get("https://www.teammed.com.au/login");
 
-            WebElement usernameElement = driver.findElementById("username");
-            WebElement passwordElement = driver.findElementById("password");
-            WebElement submitButton = driver.findElementByCssSelector("input[name='submit']");
+            WebElement usernameElement = webDriver.findElement(By.id("username"));
+            WebElement passwordElement = webDriver.findElement(By.id("password"));
+            WebElement submitButton = webDriver.findElement(By.cssSelector("input[name='submit']"));
 
             usernameElement.sendKeys(username);
             passwordElement.sendKeys(password);
             submitButton.click();
             log.info("Logging in...");
 
-            new WebDriverWait(driver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[@id='loginLink']//a[text()='Log out']")));
+            new WebDriverWait(webDriver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[@id='loginLink']//a[text()='Log out']")));
             log.info("Homepage loaded");
 
-            WebElement invoicesLink = driver.findElement(By.xpath("//nav//a[contains(text(), 'Invoices / Credit Notes')]"));
+        }, 3);
+    }
+
+    public List<InvoiceSummary> listInvoiceSummaries() {
+        List<InvoiceSummary> invoiceSummaries = new ArrayList<>();
+
+        retryOnTimeout(() -> {
+
+            WebElement invoicesLink = webDriver.findElement(By.xpath("//nav//a[contains(text(), 'Invoices / Credit Notes')]"));
             String invoicesCreditNotesUrl = invoicesLink.getAttribute("href");
 
-            driver.get(invoicesCreditNotesUrl);
+            webDriver.get(invoicesCreditNotesUrl);
 
-            new WebDriverWait(driver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h3[text()='Invoices / Credit Notes']")));
+            new WebDriverWait(webDriver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h3[text()='Invoices / Credit Notes']")));
             log.info("Invoices page loaded");
 
-            WebElement noMoreTables = driver.findElement(By.id("no-more-tables"));
+            WebElement noMoreTables = webDriver.findElement(By.id("no-more-tables"));
             List<WebElement> rows = noMoreTables.findElements(By.cssSelector("tr"));
             for (WebElement row : rows) {
                 List<WebElement> cols = row.findElements(By.cssSelector("td"));
@@ -102,19 +103,19 @@ public class TeamMedicalService {
         return invoiceSummaries;
     }
 
-    public Invoice getInvoice(InvoiceSummary invoiceSummary) {
+    public Invoice getInvoice(String invoiceId) {
         final Invoice[] invoiceDetails = {null};
 
         retryOnTimeout(() -> {
 
-            driver.get("https://www.teammed.com.au/shop/?page=order_detail&orderid=" + invoiceSummary.getId());
+            webDriver.get("https://www.teammed.com.au/shop/?page=order_detail&orderid=" + invoiceId);
 
-            new WebDriverWait(driver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h3[contains(text(), 'InvoiceSummary Details')]")));
+            new WebDriverWait(webDriver, WAIT_TIME_OUT_IN_SECONDS).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//h3[contains(text(), 'Invoice Detail')]")));
 
             List<InvoiceLineItem> invoiceLineItems = new ArrayList<>();
 
             // get invoice line items
-            WebElement invoiceDetailsTable = driver.findElement(By.id("no-more-tables"));
+            WebElement invoiceDetailsTable = webDriver.findElement(By.id("no-more-tables"));
             List<WebElement> cols = invoiceDetailsTable.findElements(By.xpath(".//tr"));
             for (WebElement col : cols) {
                 List<WebElement> rows = col.findElements(By.xpath(".//td"));
@@ -133,7 +134,7 @@ public class TeamMedicalService {
             }
 
             // get invoice details
-            WebElement invoiceDetailsPanelHeading = driver.findElement(By.xpath("//div[contains(@class, 'panel-heading') and contains(text(), 'Invoice Details')]/.."));
+            WebElement invoiceDetailsPanelHeading = webDriver.findElement(By.xpath("//div[contains(@class, 'panel-heading') and contains(text(), 'Invoice Details')]/.."));
             List<WebElement> dataListValues = invoiceDetailsPanelHeading.findElements(By.xpath(".//dd"));
             invoiceDetails[0] = Invoice.builder()
                     .id(dataListValues.get(0).getText())
@@ -156,7 +157,7 @@ public class TeamMedicalService {
         String filePath = null;
         try {
             if (invoiceSummary.getPdfLink() != null) {
-                FileDownloader fileDownloader = new FileDownloader(driver);
+                FileDownloader fileDownloader = new FileDownloader(webDriver);
                 filePath = fileDownloader.urlDownloader(invoiceSummary.getPdfLink());
             }
         } catch (Exception e) {

@@ -1,6 +1,7 @@
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.Settings;
 import com.machinepublishers.jbrowserdriver.UserAgent;
+import com.trunghoang.teammedical.model.Invoice;
 import com.trunghoang.teammedical.model.InvoiceSummary;
 import com.trunghoang.teammedical.service.TeamMedicalService;
 import org.junit.After;
@@ -27,7 +28,7 @@ public class SpikeTest {
     @Before
     public void setup() throws IOException {
         driver = new JBrowserDriver(Settings.builder()
-                .headless(false)
+                .headless(true)
                 .userAgent(UserAgent.CHROME)
                 .ajaxResourceTimeout(10000)
                 .ajaxWait(15000)
@@ -77,14 +78,23 @@ public class SpikeTest {
     }
 
     @Test
-    public void listInvoices() throws Exception {
+    public void listInvoiceSummariesAndGetDetail() throws Exception {
         TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
-        List<InvoiceSummary> invoiceSummaries = teamMedicalService.listInvoiceSummaries(username, password);
+        teamMedicalService.login(username, password);
+        List<InvoiceSummary> invoiceSummaries = teamMedicalService.listInvoiceSummaries();
 
         System.out.println("Invoices...");
         for (InvoiceSummary invoiceSummary : invoiceSummaries) {
             System.out.println(invoiceSummary);
         }
+    }
+
+    @Test
+    public void getInvoice() {
+        TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
+        teamMedicalService.login(username, password);
+        Invoice invoice = teamMedicalService.getInvoice("389303");
+        System.out.println("invoice = " + invoice);
     }
 
     @After
