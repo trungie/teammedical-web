@@ -24,6 +24,8 @@ public class SpikeTest {
 
     private String username;
     private String password;
+    private String invoiceId;
+    private String pdfLink;
 
     @Before
     public void setup() throws IOException {
@@ -39,6 +41,8 @@ public class SpikeTest {
         properties.load(inputStream);
         username = properties.getProperty("username");
         password = properties.getProperty("password");
+        invoiceId = properties.getProperty("invoiceId");
+        pdfLink = properties.getProperty("pdfLink");
     }
 
     @Test
@@ -93,8 +97,16 @@ public class SpikeTest {
     public void getInvoice() {
         TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
         teamMedicalService.login(username, password);
-        Invoice invoice = teamMedicalService.getInvoice("389303");
+        Invoice invoice = teamMedicalService.getInvoice(invoiceId);
         System.out.println("invoice = " + invoice);
+    }
+
+    @Test
+    public void getPdf() {
+        TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
+        teamMedicalService.login(username, password);
+        String downloadedFilePath = teamMedicalService.getDownloadedFilePath(pdfLink);
+        System.out.println("downloadedFilePath = " + downloadedFilePath);
     }
 
     @After

@@ -153,12 +153,12 @@ public class TeamMedicalService {
         return invoiceDetails[0];
     }
 
-    public String getPdf(InvoiceSummary invoiceSummary) {
+    public String getDownloadedFilePath(String link) {
         String filePath = null;
         try {
-            if (invoiceSummary.getPdfLink() != null) {
+            if (link != null) {
                 FileDownloader fileDownloader = new FileDownloader(webDriver);
-                filePath = fileDownloader.urlDownloader(invoiceSummary.getPdfLink());
+                filePath = fileDownloader.urlDownloader(link);
             }
         } catch (Exception e) {
             e.printStackTrace();
