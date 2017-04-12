@@ -1,1 +1,2 @@
 src/test/resources/credentials.properties
+src/test/resources/pages/invoice.html
