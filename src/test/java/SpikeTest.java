@@ -4,6 +4,7 @@ import com.machinepublishers.jbrowserdriver.UserAgent;
 import com.trunghoang.teammedical.model.Invoice;
 import com.trunghoang.teammedical.model.InvoiceSummary;
 import com.trunghoang.teammedical.service.TeamMedicalService;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -32,8 +34,8 @@ public class SpikeTest {
         driver = new JBrowserDriver(Settings.builder()
                 .headless(true)
                 .userAgent(UserAgent.CHROME)
-                .ajaxResourceTimeout(10000)
-                .ajaxWait(15000)
+                .ajaxResourceTimeout(5000)
+                .ajaxWait(3000)
                 .build());
 
         InputStream inputStream = getClass().getResourceAsStream("/credentials.properties");
@@ -102,11 +104,11 @@ public class SpikeTest {
     }
 
     @Test
-    public void getPdf() {
+    public void getPdf() throws IOException {
         TeamMedicalService teamMedicalService = new TeamMedicalService(driver);
         teamMedicalService.login(username, password);
-        String downloadedFilePath = teamMedicalService.getDownloadedFilePath(pdfLink);
-        System.out.println("downloadedFilePath = " + downloadedFilePath);
+        File file = teamMedicalService.download(pdfLink);
+        FileUtils.copyFileToDirectory(file, new File("build/"));
     }
 
     @After

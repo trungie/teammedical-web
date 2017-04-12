@@ -9,6 +9,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,17 +154,16 @@ public class TeamMedicalService {
         return invoiceDetails[0];
     }
 
-    public String getDownloadedFilePath(String link) {
-        String filePath = null;
+    public File download(String link) {
         try {
             if (link != null) {
                 FileDownloader fileDownloader = new FileDownloader(webDriver);
-                filePath = fileDownloader.urlDownloader(link);
+                return fileDownloader.urlDownloader(link);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return filePath;
+        return null;
     }
 
 }

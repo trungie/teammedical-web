@@ -23,7 +23,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import java.io.BufferedInputStream;
+import java.io.File;
 import java.net.URL;
 import java.util.Set;
 
@@ -83,15 +83,15 @@ public class FileDownloader {
         return hostConfig;
     }
 
-    public String fileDownloader(WebElement element) throws Exception {
+    public File fileDownloader(WebElement element) throws Exception {
         return downloader(element, "href");
     }
 
-    public String imageDownloader(WebElement element) throws Exception {
+    public File imageDownloader(WebElement element) throws Exception {
         return downloader(element, "src");
     }
 
-    public String downloader(WebElement element, String attribute) throws Exception {
+    public File downloader(WebElement element, String attribute) throws Exception {
         //Assuming that getAttribute does some magic to return a fully qualified URL
         String downloadLocation = element.getAttribute(attribute);
         if (downloadLocation.trim().equals("")) {
@@ -100,29 +100,21 @@ public class FileDownloader {
         return urlDownloader(downloadLocation);
     }
 
-    public String urlDownloader(String downloadLocation) throws Exception {
+    public File urlDownloader(String downloadLocation) throws Exception {
         URL downloadURL = new URL(downloadLocation);
         HttpClient client = new HttpClient();
         client.getParams().setCookiePolicy(CookiePolicy.RFC_2965);
         client.setHostConfiguration(mimicHostConfiguration(downloadURL.getHost(), downloadURL.getPort()));
         client.getParams().makeLenient();
         client.setState(mimicCookieState(driver.manage().getCookies()));
-        HttpMethod getRequest = new GetMethod(downloadURL.getPath());
+        HttpMethod getRequest = new GetMethod(downloadLocation);
         getRequest.setFollowRedirects(true);
         FileHandler downloadedFile = new FileHandler(downloadPath + downloadURL.getFile().replaceFirst("/|\\\\", ""), true);
         try {
             int status = client.executeMethod(getRequest);
             log.info("HTTP Status {} when getting '{}'", status, downloadURL.toExternalForm());
-            BufferedInputStream in = new BufferedInputStream(getRequest.getResponseBodyAsStream());
-            int offset = 0;
-            int len = 4096;
-            int bytes = 0;
-            byte[] block = new byte[len];
-            while ((bytes = in.read(block, offset, len)) > -1) {
-                downloadedFile.getWritableFileOutputStream().write(block, 0, bytes);
-            }
+            downloadedFile.getWritableFileOutputStream().write(getRequest.getResponseBody());
             downloadedFile.close();
-            in.close();
             log.info("File downloaded to '{}'", downloadedFile.getAbsoluteFile());
         } catch (Exception Ex) {
             log.error("Download failed: {}", Ex);
@@ -130,6 +122,6 @@ public class FileDownloader {
         } finally {
             getRequest.releaseConnection();
         }
-        return downloadedFile.getAbsoluteFile();
+        return downloadedFile.getFile();
     }
 }
